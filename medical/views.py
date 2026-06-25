@@ -1,6 +1,8 @@
-from rest_framework import viewsets, permissions, mixins
-from rest_framework.decorators import action
+from rest_framework import viewsets, permissions, generics
+from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
 from .models import Patient, Doctor, PatientDoctorMapping
 from .serializers import PatientSerializer, DoctorSerializer, PatientDoctorMappingSerializer
 
@@ -19,14 +21,23 @@ class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class PatientDoctorMappingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class PatientDoctorMappingListCreateView(generics.ListCreateAPIView):
     queryset = PatientDoctorMapping.objects.all()
-
     serializer_class = PatientDoctorMappingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=False, methods=['get'], url_path='(?P<patient_id>[^/.]+)')
-    def get_doctors_for_patient(self, request, patient_id=None):
-        mappings = self.get_queryset().filter(patient_id=patient_id)
-        serializer = self.get_serializer(mappings, many=True)
+class PatientDoctorMappingDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        # Assignment: GET /api/mappings/<patient_id>/ - Get all doctors assigned to a specific patient
+        mappings = PatientDoctorMapping.objects.filter(patient_id=pk)
+        serializer = PatientDoctorMappingSerializer(mappings, many=True)
         return Response(serializer.data)
+
+    def delete(self, request, pk):
+        # Assignment: DELETE /api/mappings/<id>/ - Remove a doctor from a patient
+        mapping = get_object_or_404(PatientDoctorMapping, pk=pk)
+        mapping.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
