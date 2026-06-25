@@ -1,0 +1,129 @@
+Healthcare Backend - Postman Testing Guide
+
+This guide explains how to test all the APIs using Postman. 
+Make sure your Django server is running (`python manage.py runserver`).
+Base URL: http://127.0.0.1:8000
+
+---
+1. AUTHENTICATION APIs
+---
+
+A. Register User
+- Method: POST
+- URL: http://127.0.0.1:8000/api/auth/register/
+- Headers: Content-Type: application/json
+- Body (raw JSON):
+{
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "strongpassword123"
+}
+
+B. Login (Get JWT Token)
+- Method: POST
+- URL: http://127.0.0.1:8000/api/auth/login/
+- Headers: Content-Type: application/json
+- Body (raw JSON):
+{
+    "username": "test@example.com",
+    "password": "strongpassword123"
+}
+=> IMPORTANT: Copy the "access" token from the response. You will need it for the next steps!
+
+---
+SETTING UP AUTHORIZATION FOR ALL OTHER APIs
+For all APIs below, you must go to the "Authorization" tab in Postman, select "Bearer Token", and paste your "access" token.
+---
+
+2. DOCTOR APIs
+---
+
+A. Add a Doctor
+- Method: POST
+- URL: http://127.0.0.1:8000/api/doctors/
+- Body (raw JSON):
+{
+    "name": "Dr. Smith",
+    "specialization": "Cardiologist",
+    "email": "drsmith@example.com",
+    "phone": "9876543210"
+}
+=> Take note of the Doctor "id" returned.
+
+B. Get all Doctors
+- Method: GET
+- URL: http://127.0.0.1:8000/api/doctors/
+
+C. Get Specific Doctor
+- Method: GET
+- URL: http://127.0.0.1:8000/api/doctors/1/   (Replace '1' with doctor id)
+
+D. Update Doctor
+- Method: PUT
+- URL: http://127.0.0.1:8000/api/doctors/1/
+- Body (raw JSON): Provide the full JSON with updated fields.
+
+E. Delete Doctor
+- Method: DELETE
+- URL: http://127.0.0.1:8000/api/doctors/1/
+
+---
+3. PATIENT APIs
+---
+
+A. Add a Patient
+- Method: POST
+- URL: http://127.0.0.1:8000/api/patients/
+- Body (raw JSON):
+{
+    "name": "John Doe",
+    "age": 45,
+    "gender": "Male",
+    "phone": "1234567890",
+    "address": "123 Main St"
+}
+=> Notice you don't send `created_by`. It is set automatically by your Bearer token!
+=> Take note of the Patient "id" returned.
+
+B. Get all Patients
+- Method: GET
+- URL: http://127.0.0.1:8000/api/patients/
+=> This will only return patients created by YOUR logged-in user!
+
+C. Get Specific Patient
+- Method: GET
+- URL: http://127.0.0.1:8000/api/patients/1/   (Replace '1' with patient id)
+
+D. Update Patient
+- Method: PUT
+- URL: http://127.0.0.1:8000/api/patients/1/
+- Body (raw JSON): Provide the full JSON with updated fields.
+
+E. Delete Patient
+- Method: DELETE
+- URL: http://127.0.0.1:8000/api/patients/1/
+
+---
+4. PATIENT-DOCTOR MAPPING APIs
+---
+
+A. Assign a Doctor to a Patient
+- Method: POST
+- URL: http://127.0.0.1:8000/api/mappings/
+- Body (raw JSON):
+{
+    "patient": 1,
+    "doctor": 1
+}
+
+B. Retrieve all patient-doctor mappings
+- Method: GET
+- URL: http://127.0.0.1:8000/api/mappings/
+
+C. Get all doctors assigned to a specific patient
+- Method: GET
+- URL: http://127.0.0.1:8000/api/mappings/1/   (Replace '1' with patient id)
+
+D. Remove a doctor from a patient (Delete mapping)
+- Method: DELETE
+- URL: http://127.0.0.1:8000/api/mappings/1/   (Replace '1' with mapping id)
